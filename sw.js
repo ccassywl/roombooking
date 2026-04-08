@@ -1,4 +1,4 @@
-// 把原本的 v1 改成 v2 (或者任何新名字)
+// 每次更新網頁，請把 v1 變成 v2, v3, v4... 以此類推
 const CACHE_NAME = 'ccass-booking-v2';
 
 const urlsToCache = [
@@ -25,6 +25,7 @@ self.addEventListener('fetch', event => {
   );
 });
 
+// 這段程式碼負責在偵測到新版本 (例如 v2) 時，自動刪除舊的快取 (v1)
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
@@ -32,6 +33,7 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('刪除舊快取:', cacheName);
             return caches.delete(cacheName);
           }
         })
