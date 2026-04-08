@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-HK">
 <head>
     <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2563eb">
@@ -9,7 +9,7 @@
     <title>CCASS Room Booking System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- PWA Links (Requires manifest.json and sw.js in the same folder) -->
+    <!-- PWA Links for Mobile App Install -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
     <link rel="apple-touch-icon" href="logo.png">
@@ -43,12 +43,12 @@
     <!-- Custom Password Modal -->
     <div id="password-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center z-50 transition-opacity">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 transform transition-transform fade-in">
-            <h3 class="text-lg font-bold text-slate-800 mb-2">Admin Access Required</h3>
-            <p class="text-sm text-slate-500 mb-4">Please enter the admin password to continue.</p>
-            <input type="password" id="admin-password-input" onkeypress="handlePasswordKeypress(event)" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4" placeholder="Enter password">
+            <h3 class="text-lg font-bold text-slate-800 mb-2">管理員權限 (Admin Access)</h3>
+            <p class="text-sm text-slate-500 mb-4">請輸入密碼以進入管理員介面。</p>
+            <input type="password" id="admin-password-input" onkeypress="handlePasswordKeypress(event)" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4" placeholder="輸入密碼">
             <div class="flex justify-end gap-2">
-                <button onclick="closePasswordModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">Cancel</button>
-                <button onclick="verifyPassword()" class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm">Submit</button>
+                <button onclick="closePasswordModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">取消</button>
+                <button onclick="verifyPassword()" class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm">確認</button>
             </div>
         </div>
     </div>
@@ -56,11 +56,11 @@
     <!-- Custom Confirm Modal -->
     <div id="confirm-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center z-50 transition-opacity">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 transform transition-transform fade-in">
-            <h3 class="text-lg font-bold text-slate-800 mb-2">Cancel Booking</h3>
-            <p class="text-sm text-slate-500 mb-6">Are you sure you want to cancel this booking? This will completely remove it from the database.</p>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">取消預約 (Cancel Booking)</h3>
+            <p class="text-sm text-slate-500 mb-6">您確定要取消這個已批准的預約嗎？這將會把此紀錄標記為「已取消」。</p>
             <div class="flex justify-end gap-2">
-                <button onclick="closeConfirmModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">No, Keep it</button>
-                <button onclick="executeCancelBooking()" class="px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm">Yes, Cancel</button>
+                <button onclick="closeConfirmModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">保留 (Keep it)</button>
+                <button onclick="executeCancelBooking()" class="px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm">確定取消 (Cancel)</button>
             </div>
         </div>
     </div>
@@ -68,12 +68,12 @@
     <!-- Custom Reject Modal -->
     <div id="reject-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center z-50 transition-opacity">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 transform transition-transform fade-in">
-            <h3 class="text-lg font-bold text-slate-800 mb-2">Reject Booking</h3>
-            <p class="text-sm text-slate-500 mb-4">Please provide a reason for rejecting this request (optional).</p>
-            <textarea id="reject-reason-input" rows="3" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 resize-none" placeholder="e.g. Room is under maintenance..."></textarea>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">拒絕申請 (Reject Booking)</h3>
+            <p class="text-sm text-slate-500 mb-4">請填寫拒絕原因（非必填，老師將會看到此原因）。</p>
+            <textarea id="reject-reason-input" rows="3" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 resize-none" placeholder="例如：房間正在進行維修..."></textarea>
             <div class="flex justify-end gap-2">
-                <button onclick="closeRejectModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">Cancel</button>
-                <button onclick="executeRejectBooking()" class="px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm">Confirm Reject</button>
+                <button onclick="closeRejectModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">取消</button>
+                <button onclick="executeRejectBooking()" class="px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm">確認拒絕</button>
             </div>
         </div>
     </div>
@@ -82,19 +82,19 @@
         <!-- Header -->
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
             <div class="flex items-center gap-3">
-                <img src="logo.png" alt="School Logo" class="w-12 h-12 object-contain rounded-xl shadow-sm border border-slate-100 bg-white">
+                <img src="logo.png" alt="School Logo" class="w-12 h-12 object-contain rounded-xl shadow-sm border border-slate-100 bg-white" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzI1NjNlYiI+PHBhdGggZD0iTTEyIDNMMSA5bDQgMi4xOHY2TDEyIDIxbDctMy44MnYtNmw0LTIuMThMMTIgM3ptNi44MiA2TDEyIDEwLjcyIDcuMTggOSAxMiA2LjI4IDE4LjgyIDl6TTE3IDE1Ljk5bC01IDIuNzMtNS0yLjczdi0zLjcyTDEyIDE1bDUtMi43M3YzLjcyeiIvPjwvc3ZnPg=='">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-800">CCASS Room Booking</h1>
-                    <p class="text-sm text-slate-500">Live Database System</p>
+                    <p class="text-sm text-slate-500">校園房間預約系統</p>
                 </div>
             </div>
             
             <div class="flex items-center bg-slate-100 p-1 rounded-lg w-full md:w-auto">
                 <button onclick="switchRole('teacher')" id="btn-teacher-view" class="flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white shadow text-blue-600">
-                    <i class="fas fa-chalkboard-teacher mr-2"></i>Teacher
+                    <i class="fas fa-chalkboard-teacher mr-2"></i>老師介面 (Teacher)
                 </button>
                 <button onclick="switchRole('admin')" id="btn-admin" class="flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 text-slate-500 hover:text-slate-800">
-                    <i class="fas fa-user-shield mr-2"></i>Admin
+                    <i class="fas fa-user-shield mr-2"></i>管理員 (Admin)
                 </button>
             </div>
         </header>
@@ -121,7 +121,7 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-lg font-bold flex items-center gap-2">
-                            <i class="far fa-calendar-alt text-blue-500"></i> Calendar
+                            <i class="far fa-calendar-alt text-blue-500"></i> 日曆 (Calendar)
                         </h2>
                         <div class="flex items-center gap-4">
                             <button onclick="changeMonth(-1)" class="p-2 hover:bg-slate-100 rounded-full transition-colors"><i class="fas fa-chevron-left"></i></button>
@@ -141,35 +141,37 @@
                     </div>
                     <div id="calendar-grid" class="grid grid-cols-7 gap-2"></div>
 
-                    <div class="flex gap-4 mt-6 text-xs text-slate-500 justify-center">
-                        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span> Approved</div>
-                        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-amber-400 inline-block"></span> Pending</div>
+                    <div class="flex flex-wrap gap-4 mt-6 text-xs text-slate-500 justify-center">
+                        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span> 已批准 Approved</div>
+                        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-amber-400 inline-block"></span> 待處理 Pending</div>
+                        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> 拒絕/取消 Rejected</div>
                     </div>
                 </div>
                 
                 <!-- Daily Schedule -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 fade-in">
-                    <h3 class="text-lg font-bold mb-4 border-b pb-2 flex justify-between">
+                    <h3 class="text-lg font-bold mb-4 border-b pb-2 flex justify-between items-center">
                         <span id="selected-date-display">Schedule</span>
                         <span id="selected-room-badge" class="text-xs font-normal bg-blue-100 text-blue-700 px-2 py-1 rounded-full"></span>
                     </h3>
                     <div id="daily-schedule" class="space-y-3 min-h-[100px]">
-                        <div class="text-center text-slate-400 py-8 italic">Loading database...</div>
+                        <div class="text-center text-slate-400 py-8 italic">載入資料庫中 (Loading database)...</div>
                     </div>
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN -->
+            <!-- RIGHT COLUMN: Booking Form -->
             <div class="lg:col-span-1">
                 <!-- TEACHER VIEW Form -->
                 <div id="teacher-form-panel" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sticky top-6 fade-in">
                     <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
-                        <i class="fas fa-plus-circle text-blue-500"></i> Request Room
+                        <i class="fas fa-plus-circle text-blue-500"></i> 提出預約申請
                     </h2>
-                    <form id="booking-form" onsubmit="handleBookingSubmit(event)" class="space-y-4">
+                    <form id="booking-form" onsubmit="handleBookingSubmit(event)" class="space-y-5">
                         
+                        <!-- Select Room -->
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Select Room</label>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">選擇房間 (Select Room)</label>
                             <select id="form-room" onchange="switchRoom(this.value)" required class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
                                 <option value="english">English Room 英語室</option>
                                 <option value="careers">Careers & Life Planning 生涯規劃室</option>
@@ -177,56 +179,143 @@
                             </select>
                         </div>
 
-                        <!-- Multiple Dates Selector -->
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Select Dates</label>
+                        <!-- Date Selection Strategy Toggle -->
+                        <div class="bg-slate-50 p-1.5 rounded-lg inline-flex w-full mb-2">
+                            <label class="flex-1 text-center">
+                                <input type="radio" name="date-mode" value="specific" class="peer hidden" checked onchange="toggleDateMode()">
+                                <div class="px-2 py-1.5 text-sm rounded-md cursor-pointer peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm peer-checked:font-bold text-slate-500 transition-all">單日 / 特定日</div>
+                            </label>
+                            <label class="flex-1 text-center">
+                                <input type="radio" name="date-mode" value="recurring" class="peer hidden" onchange="toggleDateMode()">
+                                <div class="px-2 py-1.5 text-sm rounded-md cursor-pointer peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm peer-checked:font-bold text-slate-500 transition-all">週期 / 範圍預約</div>
+                            </label>
+                        </div>
+
+                        <!-- MODE 1: Specific Dates -->
+                        <div id="mode-specific" class="space-y-2">
+                            <label class="block text-sm font-medium text-slate-700">選擇日期 (Select Dates)</label>
                             <div class="flex gap-2">
                                 <input type="date" id="form-date-input" class="flex-1 px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
-                                <button type="button" onclick="addFormDate()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg transition-colors font-medium text-sm">Add</button>
+                                <button type="button" onclick="addFormDate()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg transition-colors font-medium text-sm">新增 (Add)</button>
                             </div>
-                            <!-- Date Tags Container -->
-                            <div id="selected-dates-container" class="flex flex-wrap gap-2 mt-2 min-h-[32px]">
-                                <span class="text-xs text-slate-400 italic mt-1">No dates selected. Pick a date and click Add.</span>
+                            <div id="selected-dates-container" class="flex flex-wrap gap-2 min-h-[32px] p-2 bg-slate-50 border border-slate-100 rounded-lg">
+                                <span class="text-xs text-slate-400 italic mt-1">未選擇日期。請挑選日期並點擊新增。</span>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <!-- MODE 2: Recurring Dates -->
+                        <div id="mode-recurring" class="hidden space-y-3 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-indigo-800 mb-1">開始日期 (Start)</label>
+                                    <input type="date" id="recurring-start" class="w-full px-2 py-2 text-sm rounded border border-indigo-200 focus:ring-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-indigo-800 mb-1">結束日期 (End)</label>
+                                    <input type="date" id="recurring-end" class="w-full px-2 py-2 text-sm rounded border border-indigo-200 focus:ring-indigo-500">
+                                </div>
+                            </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Start Time</label>
-                                <div class="flex gap-2 items-center">
+                                <label class="block text-xs font-bold text-indigo-800 mb-2">重複星期 (Repeat On)</label>
+                                <div class="flex flex-wrap gap-2 justify-between">
+                                    <label class="flex flex-col items-center cursor-pointer">
+                                        <input type="checkbox" value="1" class="day-cb w-4 h-4 text-indigo-600 rounded">
+                                        <span class="text-xs mt-1">一</span>
+                                    </label>
+                                    <label class="flex flex-col items-center cursor-pointer">
+                                        <input type="checkbox" value="2" class="day-cb w-4 h-4 text-indigo-600 rounded">
+                                        <span class="text-xs mt-1">二</span>
+                                    </label>
+                                    <label class="flex flex-col items-center cursor-pointer">
+                                        <input type="checkbox" value="3" class="day-cb w-4 h-4 text-indigo-600 rounded">
+                                        <span class="text-xs mt-1">三</span>
+                                    </label>
+                                    <label class="flex flex-col items-center cursor-pointer">
+                                        <input type="checkbox" value="4" class="day-cb w-4 h-4 text-indigo-600 rounded">
+                                        <span class="text-xs mt-1">四</span>
+                                    </label>
+                                    <label class="flex flex-col items-center cursor-pointer">
+                                        <input type="checkbox" value="5" class="day-cb w-4 h-4 text-indigo-600 rounded">
+                                        <span class="text-xs mt-1">五</span>
+                                    </label>
+                                    <label class="flex flex-col items-center cursor-pointer">
+                                        <input type="checkbox" value="6" class="day-cb w-4 h-4 text-indigo-600 rounded">
+                                        <span class="text-xs mt-1">六</span>
+                                    </label>
+                                    <label class="flex flex-col items-center cursor-pointer">
+                                        <input type="checkbox" value="0" class="day-cb w-4 h-4 text-indigo-600 rounded">
+                                        <span class="text-xs mt-1">日</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <p class="text-xs text-indigo-600/80 leading-tight mt-1">
+                                <i class="fas fa-info-circle"></i> 系統會自動為區間內所有符合打勾星期的日子提交申請。
+                            </p>
+                        </div>
+
+                        <!-- Time Selection -->
+                        <div class="grid grid-cols-2 gap-4 pt-2">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">開始時間 (Start)</label>
+                                <div class="flex gap-1 items-center">
                                     <select id="start-hour" required class="w-full px-1 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 appearance-none text-center"></select>
                                     <span class="font-bold text-slate-400">:</span>
                                     <select id="start-minute" required class="w-full px-1 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 appearance-none text-center"></select>
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">End Time</label>
-                                <div class="flex gap-2 items-center">
+                                <label class="block text-sm font-medium text-slate-700 mb-1">結束時間 (End)</label>
+                                <div class="flex gap-1 items-center">
                                     <select id="end-hour" required class="w-full px-1 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 appearance-none text-center"></select>
                                     <span class="font-bold text-slate-400">:</span>
                                     <select id="end-minute" required class="w-full px-1 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 appearance-none text-center"></select>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Teacher details -->
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Teacher Name</label>
-                            <input type="text" id="form-name" required placeholder="e.g. Mr. Smith" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">老師姓名 (Teacher Name)</label>
+                            <input type="text" id="form-name" required placeholder="例如：Mr. Chan" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Purpose</label>
-                            <textarea id="form-purpose" required rows="2" placeholder="Reason for booking?" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 resize-none"></textarea>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">預約用途 (Purpose)</label>
+                            <textarea id="form-purpose" required rows="2" placeholder="課堂 / 會議 / 補課..." class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 resize-none"></textarea>
                         </div>
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md mt-4 transition-colors">
-                            Submit Request(s)
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md mt-2 transition-colors">
+                            提交申請 (Submit Request)
                         </button>
                     </form>
                 </div>
 
                 <!-- ADMIN VIEW Dashboard -->
                 <div id="admin-panel" class="hidden bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sticky top-6 fade-in">
-                    <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
-                        <i class="fas fa-inbox text-blue-500"></i> Pending Requests
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <i class="fas fa-inbox text-blue-500"></i> 待處理申請 (Pending)
                     </h2>
+
+                    <!-- Admin Toolbar -->
+                    <div class="flex flex-col gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-inner">
+                        <!-- Top: Dropdown Filter -->
+                        <select id="admin-room-filter" onchange="changeAdminFilter(this.value)" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white font-medium text-slate-700 shadow-sm">
+                            <option value="all">所有房間 (All Rooms)</option>
+                            <option value="english">English Room 英語室</option>
+                            <option value="careers">Careers & Life Planning 生涯規劃室</option>
+                            <option value="diversity">Diversity Learning 多元學習室</option>
+                        </select>
+                        
+                        <!-- Bottom: Bulk Actions -->
+                        <div class="flex items-center justify-between pt-2 mt-1 border-t border-slate-200">
+                            <label class="flex items-center gap-2 text-sm cursor-pointer text-slate-700 font-medium whitespace-nowrap">
+                                <input type="checkbox" id="admin-select-all" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 text-blue-600 rounded cursor-pointer shadow-sm">
+                                <span>全選 (Select All)</span>
+                            </label>
+                            <button onclick="bulkApprove()" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-1.5 px-4 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 whitespace-nowrap">
+                                <i class="fas fa-check-double"></i> 批量批准
+                            </button>
+                        </div>
+                    </div>
+
                     <div id="pending-requests" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
                 </div>
             </div>
@@ -249,7 +338,7 @@
         } else {
             // 👇👇👇 請覆蓋下面大括號裡面的內容 👇👇👇
             firebaseConfig = {
-                 apiKey: "AIzaSyAxYyZxJqESELIKk1Zsh_XUVdL9FfrQchg",
+               apiKey: "AIzaSyAxYyZxJqESELIKk1Zsh_XUVdL9FfrQchg",
   authDomain: "english-room-booking.firebaseapp.com",
   projectId: "english-room-booking",
   storageBucket: "english-room-booking.firebasestorage.app",
@@ -267,7 +356,6 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-github-project';
         const collectionName = 'bookings';
 
-        // Constants
         const ROOM_NAMES = {
             'english': 'English Room 英語室',
             'careers': 'Careers & Life Planning 生涯規劃室',
@@ -278,14 +366,13 @@
         let bookings = []; 
         let currentUser = null;
         let currentRole = 'teacher';
-        let currentRoom = 'english'; // active room tab
+        let currentRoom = 'english'; 
         let currentDate = new Date();
         let selectedDate = new Date();
         let bookingToCancel = null;
         let bookingToReject = null;
-        let selectedFormDates = []; // For multiple dates
+        let selectedFormDates = []; 
 
-        // Initialize Options
         function generateTimeOptions() {
             let hourOptions = '<option value="" disabled selected>--</option>';
             for (let h = 7; h <= 22; h++) {
@@ -303,7 +390,6 @@
             document.getElementById('end-minute').innerHTML = minuteOptions;
         }
 
-        // Firebase Auth & Sync
         const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -326,25 +412,18 @@
                     });
                     updateUI();
                 }, (error) => {
-                    showToast('Database Error', 'Could not load data.', 'error');
+                    showToast('資料庫錯誤', '無法載入資料。', 'error');
                 });
             }
         });
 
-        // --- Window Binding Functions (For HTML onClick) ---
-        
+        // --- Window Binding Functions ---
         window.switchRoom = function(roomKey) {
             currentRoom = roomKey;
-            document.getElementById('form-room').value = roomKey; // Sync form
-
-            // Update Tab Styles
+            document.getElementById('form-room').value = roomKey;
             ['english', 'careers', 'diversity'].forEach(r => {
                 const tab = document.getElementById(`tab-${r}`);
-                if (r === roomKey) {
-                    tab.className = "pb-3 px-2 tab-active transition-colors text-sm sm:text-base";
-                } else {
-                    tab.className = "pb-3 px-2 tab-inactive transition-colors text-sm sm:text-base";
-                }
+                tab.className = r === roomKey ? "pb-3 px-2 tab-active transition-colors text-sm sm:text-base" : "pb-3 px-2 tab-inactive transition-colors text-sm sm:text-base";
             });
             updateUI();
         };
@@ -360,14 +439,13 @@
         };
 
         window.closePasswordModal = () => document.getElementById('password-modal').classList.add('hidden');
-        
         window.verifyPassword = function() {
             if (document.getElementById('admin-password-input').value === 'ccassroom123') {
                 window.closePasswordModal();
                 executeRoleSwitch('admin');
-                showToast('Welcome Admin', 'You have entered admin view.', 'success');
+                showToast('歡迎登入', '已進入管理員介面。', 'success');
             } else {
-                showToast('Access Denied', 'Incorrect password.', 'error');
+                showToast('登入失敗', '密碼錯誤。', 'error');
                 document.getElementById('admin-password-input').value = '';
                 document.getElementById('admin-password-input').focus();
             }
@@ -380,18 +458,28 @@
             document.getElementById('form-date-input').value = formatDate(date); 
             updateUI(); 
         };
+        
         window.closeConfirmModal = () => { document.getElementById('confirm-modal').classList.add('hidden'); bookingToCancel = null; };
+        
+        // --- Date Selection Mode Toggle ---
+        window.toggleDateMode = function() {
+            const mode = document.querySelector('input[name="date-mode"]:checked').value;
+            if (mode === 'specific') {
+                document.getElementById('mode-specific').classList.remove('hidden');
+                document.getElementById('mode-recurring').classList.add('hidden');
+            } else {
+                document.getElementById('mode-specific').classList.add('hidden');
+                document.getElementById('mode-recurring').classList.remove('hidden');
+            }
+        };
 
         // --- Multi-Date Form Logic ---
         window.addFormDate = function() {
             const dateVal = document.getElementById('form-date-input').value;
-            if (!dateVal) {
-                showToast('Notice', 'Please pick a date first.', 'info');
-                return;
-            }
+            if (!dateVal) { showToast('提示', '請先選擇一個日期。', 'info'); return; }
             if (!selectedFormDates.includes(dateVal)) {
                 selectedFormDates.push(dateVal);
-                selectedFormDates.sort(); // Keep dates in chronological order
+                selectedFormDates.sort(); 
                 renderFormDates();
             }
         };
@@ -404,7 +492,7 @@
         function renderFormDates() {
             const container = document.getElementById('selected-dates-container');
             if (selectedFormDates.length === 0) {
-                container.innerHTML = '<span class="text-xs text-slate-400 italic mt-1">No dates selected. Pick a date and click Add.</span>';
+                container.innerHTML = '<span class="text-xs text-slate-400 italic mt-1">未選擇日期。請挑選日期並點擊新增。</span>';
                 return;
             }
             container.innerHTML = selectedFormDates.map(d => `
@@ -417,14 +505,54 @@
             `).join('');
         }
 
+        // --- Utility to Calculate Recurring Dates ---
+        function calculateRecurringDates() {
+            const startVal = document.getElementById('recurring-start').value;
+            const endVal = document.getElementById('recurring-end').value;
+            const checkedBoxes = document.querySelectorAll('.day-cb:checked');
+            
+            if (!startVal || !endVal) return { error: '請完整選擇開始與結束日期。' };
+            if (checkedBoxes.length === 0) return { error: '請至少選擇一個重複的星期。' };
+            
+            const startDate = new Date(startVal);
+            const endDate = new Date(endVal);
+            if (startDate > endDate) return { error: '結束日期不能早於開始日期。' };
+
+            const selectedDays = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+            const calculatedDates = [];
+            
+            let current = new Date(startDate);
+            while (current <= endDate) {
+                if (selectedDays.includes(current.getDay())) {
+                    calculatedDates.push(formatDate(current));
+                }
+                current.setDate(current.getDate() + 1);
+            }
+            
+            if (calculatedDates.length === 0) return { error: '所選的區間內沒有符合的星期日子。' };
+            return { dates: calculatedDates };
+        }
 
         // --- Submit Booking ---
         window.handleBookingSubmit = async function(e) {
             e.preventDefault();
-            if(!currentUser) { showToast('Error', 'Not connected to database', 'error'); return; }
+            if(!currentUser) { showToast('錯誤', '未連接至資料庫', 'error'); return; }
 
-            if (selectedFormDates.length === 0) {
-                showToast('Error', 'Please add at least one date.', 'error'); return;
+            // Determine dates to submit based on selected mode
+            let datesToSubmit = [];
+            const mode = document.querySelector('input[name="date-mode"]:checked').value;
+            
+            if (mode === 'specific') {
+                if (selectedFormDates.length === 0) {
+                    showToast('錯誤', '請至少加入一個日期。', 'error'); return;
+                }
+                datesToSubmit = [...selectedFormDates];
+            } else {
+                const result = calculateRecurringDates();
+                if (result.error) {
+                    showToast('範圍錯誤', result.error, 'error'); return;
+                }
+                datesToSubmit = result.dates;
             }
 
             const room = document.getElementById('form-room').value;
@@ -436,74 +564,66 @@
             const purpose = document.getElementById('form-purpose').value;
 
             if(!startHour || !startMinute || !endHour || !endMinute) {
-                showToast('Error', 'Please select complete times.', 'error'); return;
+                showToast('錯誤', '請填寫完整的開始與結束時間。', 'error'); return;
             }
-
             const start = `${startHour}:${startMinute}`;
             const end = `${endHour}:${endMinute}`;
+            if(start >= end) { showToast('錯誤', '結束時間必須晚於開始時間。', 'error'); return; }
 
-            if(start >= end) { showToast('Error', 'End time must be after start time.', 'error'); return; }
-
-            // Pre-check for conflicts across ALL selected dates
-            for (const d of selectedFormDates) {
+            // Pre-check for conflicts across ALL dates
+            for (const d of datesToSubmit) {
                 const overlap = bookings.some(b => 
                     b.room === room && b.date === d && b.status === 'Approved' && 
                     ((start >= b.start && start < b.end) || (end > b.start && end <= b.end) || (start <= b.start && end >= b.end))
                 );
 
                 if(overlap) { 
-                    showToast('Time Conflict', `The ${ROOM_NAMES[room]} is already booked on ${d} at this time.`, 'error'); 
-                    return; // Abort entirely if there is ANY conflict
+                    showToast('時段衝突', `在 ${d} 的這個時段，${ROOM_NAMES[room].split(' ')[0]} 已經被預約了。`, 'error'); 
+                    return; 
                 }
             }
 
             try {
-                // Submit a separate document for each date
-                const promises = selectedFormDates.map(d => {
+                const promises = datesToSubmit.map(d => {
                     const newBooking = { room, date: d, start, end, purpose, requester: name, status: 'Pending', createdAt: Date.now() };
                     return addDoc(collection(db, 'artifacts', appId, 'public', 'data', collectionName), newBooking);
                 });
                 
                 await Promise.all(promises);
 
-                // Reset
                 document.getElementById('booking-form').reset();
                 selectedFormDates = [];
                 renderFormDates();
+                document.getElementById('form-room').value = currentRoom; // keep tab sync
                 
-                showToast('Success', `Successfully submitted requests for ${promises.length} day(s).`, 'success');
+                showToast('申請成功', `已成功為 ${promises.length} 個日子提交預約申請！`, 'success');
             } catch(e) {
-                showToast('Database Error', 'Failed to submit requests.', 'error');
+                showToast('資料庫錯誤', '無法提交申請。', 'error');
             }
         };
 
-        // --- Status Updates ---
+        // --- Admin Status Updates ---
         window.updateBookingStatus = async function(id, newStatus, reason = '') {
             if(!currentUser) return;
             try {
                 if(newStatus === 'Approved') {
                     const approvedBooking = bookings.find(b => b.id === id);
-                    // Reject conflicts for the SAME ROOM
                     for(const b of bookings) {
                         if(b.id !== id && b.room === approvedBooking.room && b.date === approvedBooking.date && b.status === 'Pending') {
                             if((approvedBooking.start >= b.start && approvedBooking.start < b.end) || 
                                (approvedBooking.end > b.start && approvedBooking.end <= b.end) || 
                                (approvedBooking.start <= b.start && approvedBooking.end >= b.end)) {
-                                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', collectionName, b.id), { status: 'Rejected', rejectReason: 'Auto-rejected: Time conflict with an approved booking.' });
+                                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', collectionName, b.id), { status: 'Rejected', rejectReason: '系統自動拒絕：與已批准的預約時間衝突。' });
                             }
                         }
                     }
                 }
-                
                 const updateData = { status: newStatus };
-                if (newStatus === 'Rejected' && reason) {
-                    updateData.rejectReason = reason;
-                }
-                
+                if (newStatus === 'Rejected' && reason) updateData.rejectReason = reason;
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', collectionName, id), updateData);
-                showToast('Status Updated', `Request ${newStatus.toLowerCase()}.`, newStatus === 'Approved' ? 'success' : 'info');
+                showToast('狀態已更新', `申請已${newStatus === 'Approved' ? '批准' : '拒絕'}。`, newStatus === 'Approved' ? 'success' : 'info');
             } catch(e) {
-                showToast('Database Error', 'Failed to update status.', 'error');
+                showToast('資料庫錯誤', '無法更新狀態。', 'error');
             }
         };
 
@@ -533,15 +653,69 @@
         window.executeCancelBooking = async function() {
             if (!currentUser || !bookingToCancel) return;
             try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', collectionName, bookingToCancel));
-                showToast('Booking Cancelled', 'Booking removed completely.', 'info');
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', collectionName, bookingToCancel), { status: 'Cancelled' });
+                showToast('預約已取消', '預約紀錄已標記為取消。', 'info');
                 window.closeConfirmModal();
-            } catch(e) {
-                showToast('Database Error', 'Failed to cancel booking.', 'error');
+            } catch(e) { showToast('資料庫錯誤', '無法取消預約。', 'error'); }
+        };
+
+        // --- Admin Toolbar Functions ---
+        window.changeAdminFilter = function(val) {
+            renderAdminPanel();
+        };
+
+        window.toggleSelectAll = function(checked) {
+            document.querySelectorAll('.admin-bulk-cb').forEach(cb => cb.checked = checked);
+        };
+
+        window.checkIndividual = function() {
+            const total = document.querySelectorAll('.admin-bulk-cb').length;
+            const checked = document.querySelectorAll('.admin-bulk-cb:checked').length;
+            if(document.getElementById('admin-select-all')) {
+                document.getElementById('admin-select-all').checked = (total > 0 && total === checked);
             }
         };
 
-        // --- Core UI Functions ---
+        window.bulkApprove = async function() {
+            const checkedBoxes = document.querySelectorAll('.admin-bulk-cb:checked');
+            if(checkedBoxes.length === 0) {
+                showToast('提示', '請先勾選要批准的申請。', 'info');
+                return;
+            }
+
+            const idsToApprove = Array.from(checkedBoxes).map(cb => cb.value);
+            if(!currentUser) return;
+
+            try {
+                let approvedCount = 0;
+                // Process sequentially to handle auto-reject logic safely
+                for(const id of idsToApprove) {
+                    const approvedBooking = bookings.find(b => b.id === id);
+                    if(!approvedBooking || approvedBooking.status !== 'Pending') continue;
+
+                    // Reject conflicts for the SAME ROOM
+                    for(const b of bookings) {
+                        if(b.id !== id && b.room === approvedBooking.room && b.date === approvedBooking.date && b.status === 'Pending') {
+                            if((approvedBooking.start >= b.start && approvedBooking.start < b.end) || 
+                               (approvedBooking.end > b.start && approvedBooking.end <= b.end) || 
+                               (approvedBooking.start <= b.start && approvedBooking.end >= b.end)) {
+                                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', collectionName, b.id), { status: 'Rejected', rejectReason: '系統自動拒絕：與已批准的預約時間衝突。' });
+                                b.status = 'Rejected'; // instantly update local memory to prevent double-processing
+                            }
+                        }
+                    }
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', collectionName, id), { status: 'Approved' });
+                    approvedBooking.status = 'Approved';
+                    approvedCount++;
+                }
+                showToast('批量批准成功', `已成功批准 ${approvedCount} 個申請！`, 'success');
+                if(document.getElementById('admin-select-all')) document.getElementById('admin-select-all').checked = false;
+            } catch(e) {
+                showToast('資料庫錯誤', '無法完成批量批准。', 'error');
+            }
+        };
+
+        // --- Rendering UI ---
         function executeRoleSwitch(role) {
             currentRole = role;
             const btnT = document.getElementById('btn-teacher-view');
@@ -570,8 +744,8 @@
         function renderCalendar() {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
-            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            document.getElementById('current-month-display').innerText = `${monthNames[month]} ${year}`;
+            const monthNames = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
+            document.getElementById('current-month-display').innerText = `${year}年 ${monthNames[month]}`;
             
             const grid = document.getElementById('calendar-grid');
             grid.innerHTML = '';
@@ -585,8 +759,6 @@
             
             const todayStr = formatDate(new Date());
             const selectedStr = formatDate(selectedDate);
-            
-            // Only show dots for the currently active room tab
             const activeRoomBookings = bookings.filter(b => b.room === currentRoom);
 
             for (let i = 1; i <= daysInMonth; i++) {
@@ -598,6 +770,7 @@
                 const dayBookings = activeRoomBookings.filter(b => b.date === dateStr);
                 const hasApproved = dayBookings.some(b => b.status === 'Approved');
                 const hasPending = dayBookings.some(b => b.status === 'Pending');
+                const hasRejected = dayBookings.some(b => b.status === 'Rejected' || b.status === 'Cancelled');
 
                 const cell = document.createElement('div');
                 cell.className = `aspect-square flex flex-col items-center justify-center rounded-xl cursor-pointer transition-all border-2 
@@ -609,6 +782,7 @@
                     <div class="flex gap-1 mt-1 h-1.5">
                         ${hasApproved ? '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>' : ''}
                         ${hasPending ? '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>' : ''}
+                        ${hasRejected ? '<span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>' : ''}
                     </div>`;
                 grid.appendChild(cell);
             }
@@ -616,38 +790,41 @@
 
         function renderDailySchedule() {
             const dateStr = formatDate(selectedDate);
-            const displayDate = selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+            const displayDate = selectedDate.toLocaleDateString('zh-HK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             
-            document.getElementById('selected-date-display').innerText = `Schedule for ${displayDate}`;
-            document.getElementById('selected-room-badge').innerText = ROOM_NAMES[currentRoom].split(' ')[0] + ' Room';
+            document.getElementById('selected-date-display').innerText = `${displayDate} 日程`;
+            document.getElementById('selected-room-badge').innerText = ROOM_NAMES[currentRoom].split(' ')[0];
             
             const scheduleContainer = document.getElementById('daily-schedule');
             scheduleContainer.innerHTML = '';
 
-            // Filter schedule strictly by the active room
             const dailyBookings = bookings.filter(b => b.date === dateStr && b.room === currentRoom).sort((a, b) => a.start.localeCompare(b.start));
 
             if (dailyBookings.length === 0) {
-                scheduleContainer.innerHTML = `<div class="text-center text-slate-400 py-8 italic bg-slate-50 rounded-lg border border-dashed border-slate-200">No bookings for this date.</div>`;
+                scheduleContainer.innerHTML = `<div class="text-center text-slate-400 py-8 italic bg-slate-50 rounded-lg border border-dashed border-slate-200">本日暫無預約。</div>`;
                 return;
             }
 
             dailyBookings.forEach(booking => {
                 const statusColor = booking.status === 'Approved' ? 'bg-green-100 text-green-700 border-green-200' : 
-                                   booking.status === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' : 
+                                   (booking.status === 'Rejected' || booking.status === 'Cancelled') ? 'bg-red-100 text-red-700 border-red-200' : 
                                    'bg-amber-50 text-amber-700 border-amber-200';
                 const icon = booking.status === 'Approved' ? 'fa-check-circle' : 
-                             booking.status === 'Rejected' ? 'fa-times-circle' : 'fa-clock';
+                             (booking.status === 'Rejected' || booking.status === 'Cancelled') ? 'fa-times-circle' : 'fa-clock';
 
                 let adminControls = '';
                 if (currentRole === 'admin' && booking.status === 'Approved') {
-                    adminControls = `<button onclick="cancelBooking('${booking.id}')" class="mt-2 text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md transition-colors shadow-sm"><i class="fas fa-trash-alt mr-1"></i> Cancel Booking</button>`;
+                    adminControls = `<button onclick="cancelBooking('${booking.id}')" class="mt-2 text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md transition-colors shadow-sm"><i class="fas fa-trash-alt mr-1"></i> 取消預約</button>`;
                 }
 
                 let rejectInfo = '';
                 if (booking.status === 'Rejected' && booking.rejectReason) {
-                    rejectInfo = `<div class="mt-2 text-xs text-red-700 bg-white p-2 rounded-md border border-red-200"><i class="fas fa-info-circle mr-1"></i> <strong>Reason:</strong> ${booking.rejectReason}</div>`;
+                    rejectInfo = `<div class="mt-2 text-xs text-red-700 bg-white p-2 rounded-md border border-red-200"><i class="fas fa-info-circle mr-1"></i> <strong>拒絕原因：</strong> ${booking.rejectReason}</div>`;
+                } else if (booking.status === 'Cancelled') {
+                    rejectInfo = `<div class="mt-2 text-xs text-red-700 bg-white p-2 rounded-md border border-red-200"><i class="fas fa-info-circle mr-1"></i> <strong>系統提示：</strong> 此預約已取消</div>`;
                 }
+
+                const displayStatus = booking.status === 'Approved' ? '已批准' : booking.status === 'Rejected' ? '已拒絕' : booking.status === 'Cancelled' ? '已取消' : '待處理';
 
                 scheduleContainer.innerHTML += `
                     <div class="p-3 rounded-xl border ${statusColor} flex justify-between items-start fade-in shadow-sm">
@@ -660,7 +837,7 @@
                         </div>
                         <div class="flex flex-col items-end">
                             <span class="text-xs font-bold px-2 py-1 rounded-full bg-white bg-opacity-50 flex items-center gap-1">
-                                <i class="fas ${icon}"></i> ${booking.status}
+                                <i class="fas ${icon}"></i> ${displayStatus}
                             </span>
                         </div>
                     </div>
@@ -671,50 +848,67 @@
         function renderAdminPanel() {
             const container = document.getElementById('pending-requests');
             container.innerHTML = '';
+            
+            const filterElement = document.getElementById('admin-room-filter');
+            const filterRoom = filterElement ? filterElement.value : 'all';
 
-            // Admin sees pending requests for ALL rooms
-            const pendingBookings = bookings.filter(b => b.status === 'Pending').sort((a, b) => new Date(a.date) - new Date(b.date));
+            let pendingBookings = bookings.filter(b => b.status === 'Pending').sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // Apply Room Filter
+            if (filterRoom !== 'all') {
+                pendingBookings = pendingBookings.filter(b => b.room === filterRoom);
+            }
 
             if (pendingBookings.length === 0) {
                 container.innerHTML = `
                     <div class="text-center p-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                         <i class="fas fa-check-circle text-4xl text-slate-300 mb-3 block"></i>
-                        <p class="text-slate-500 font-medium">All caught up!</p>
-                        <p class="text-xs text-slate-400 mt-1">No pending requests to review.</p>
+                        <p class="text-slate-500 font-medium">太棒了！</p>
+                        <p class="text-xs text-slate-400 mt-1">此分類目前沒有待處理的申請。</p>
                     </div>`;
                 return;
             }
 
             pendingBookings.forEach(booking => {
-                const displayDate = new Date(booking.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                // Assign a color badge based on the room
+                const displayDate = new Date(booking.date).toLocaleDateString('zh-HK', { month: 'short', day: 'numeric', weekday: 'short' });
                 const roomColor = booking.room === 'english' ? 'bg-indigo-100 text-indigo-700 border-indigo-200' :
                                   booking.room === 'careers' ? 'bg-teal-100 text-teal-700 border-teal-200' :
                                   'bg-purple-100 text-purple-700 border-purple-200';
 
                 container.innerHTML += `
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm fade-in">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded-md shadow-sm">${displayDate}</span>
-                            <span class="text-xs font-bold text-slate-600"><i class="far fa-clock"></i> ${booking.start} - ${booking.end}</span>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm fade-in flex gap-3 relative">
+                        <!-- Checkbox for Bulk Actions -->
+                        <div class="pt-1">
+                            <input type="checkbox" value="${booking.id}" class="admin-bulk-cb w-5 h-5 text-blue-600 rounded border-gray-300 cursor-pointer" onchange="checkIndividual()">
                         </div>
-                        <span class="inline-block text-xs font-semibold px-2 py-1 mb-2 rounded-full border ${roomColor}">
-                            ${ROOM_NAMES[booking.room]}
-                        </span>
-                        <h4 class="font-bold text-slate-800 mb-1">${booking.purpose}</h4>
-                        <p class="text-sm text-slate-500 mb-4"><i class="fas fa-user text-slate-400 mr-1"></i> Requested by: <span class="font-medium text-slate-700">${booking.requester}</span></p>
-                        
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="updateBookingStatus('${booking.id}', 'Approved')" class="bg-green-500 hover:bg-green-600 text-white text-sm font-bold py-2 rounded-lg transition-colors flex justify-center items-center gap-1 shadow-sm">
-                                <i class="fas fa-check"></i> Approve
-                            </button>
-                            <button onclick="promptRejectBooking('${booking.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 text-sm font-bold py-2 rounded-lg transition-colors border border-red-200 flex justify-center items-center gap-1">
-                                <i class="fas fa-times"></i> Reject
-                            </button>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded-md shadow-sm">${displayDate}</span>
+                                <span class="text-xs font-bold text-slate-600"><i class="far fa-clock"></i> ${booking.start} - ${booking.end}</span>
+                            </div>
+                            <span class="inline-block text-xs font-semibold px-2 py-1 mb-2 rounded-full border ${roomColor}">
+                                ${ROOM_NAMES[booking.room]}
+                            </span>
+                            <h4 class="font-bold text-slate-800 mb-1">${booking.purpose}</h4>
+                            <p class="text-sm text-slate-500 mb-4"><i class="fas fa-user text-slate-400 mr-1"></i> 申請人：<span class="font-medium text-slate-700">${booking.requester}</span></p>
+                            
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="updateBookingStatus('${booking.id}', 'Approved')" class="bg-green-500 hover:bg-green-600 text-white text-sm font-bold py-2 rounded-lg transition-colors flex justify-center items-center gap-1 shadow-sm">
+                                    <i class="fas fa-check"></i> 批准
+                                </button>
+                                <button onclick="promptRejectBooking('${booking.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 text-sm font-bold py-2 rounded-lg transition-colors border border-red-200 flex justify-center items-center gap-1">
+                                    <i class="fas fa-times"></i> 拒絕
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
             });
+
+            // Reset select-all checkbox when list re-renders
+            if(document.getElementById('admin-select-all')) {
+                document.getElementById('admin-select-all').checked = false;
+            }
         }
 
         function formatDate(date) {
@@ -742,6 +936,21 @@
         generateTimeOptions();
         document.getElementById('form-date-input').value = formatDate(selectedDate);
         renderFormDates();
+    </script>
+    
+    <!-- Register Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
     </script>
     <script>
     if ('serviceWorker' in navigator) {
