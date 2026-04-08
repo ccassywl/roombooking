@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCASS Room Booking System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- PWA Links (Requires manifest.json and sw.js in the same folder) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="logo.png">
+    
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: bold; }
+        .tab-inactive { border-bottom: 2px solid transparent; color: #64748b; }
+        .tab-inactive:hover { color: #334155; border-bottom: 2px solid #cbd5e1; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed top-4 right-4 bg-white shadow-lg rounded-lg border border-slate-200 p-4 transform transition-transform duration-300 translate-x-full z-50 flex items-center gap-3">
+        <i id="toast-icon" class="fas fa-check-circle text-green-500 text-xl"></i>
+        <div>
+            <h4 id="toast-title" class="font-bold text-sm">Success</h4>
+            <p id="toast-message" class="text-xs text-slate-500">Action completed.</p>
+        </div>
+    </div>
+
+    <!-- Custom Password Modal -->
+    <div id="password-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center z-50 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 transform transition-transform fade-in">
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Admin Access Required</h3>
+            <p class="text-sm text-slate-500 mb-4">Please enter the admin password to continue.</p>
+            <input type="password" id="admin-password-input" onkeypress="handlePasswordKeypress(event)" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4" placeholder="Enter password">
+            <div class="flex justify-end gap-2">
+                <button onclick="closePasswordModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">Cancel</button>
+                <button onclick="verifyPassword()" class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center z-50 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 transform transition-transform fade-in">
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Cancel Booking</h3>
+            <p class="text-sm text-slate-500 mb-6">Are you sure you want to cancel this booking? This will completely remove it from the database.</p>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeConfirmModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">No, Keep it</button>
+                <button onclick="executeCancelBooking()" class="px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm">Yes, Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Reject Modal -->
+    <div id="reject-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center z-50 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 transform transition-transform fade-in">
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Reject Booking</h3>
+            <p class="text-sm text-slate-500 mb-4">Please provide a reason for rejecting this request (optional).</p>
+            <textarea id="reject-reason-input" rows="3" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 resize-none" placeholder="e.g. Room is under maintenance..."></textarea>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeRejectModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">Cancel</button>
+                <button onclick="executeRejectBooking()" class="px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm">Confirm Reject</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+            <div class="flex items-center gap-3">
+                <img src="logo.png" alt="School Logo" class="w-12 h-12 object-contain rounded-xl shadow-sm border border-slate-100 bg-white">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800">CCASS Room Booking</h1>
+                    <p class="text-sm text-slate-500">Live Database System</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center bg-slate-100 p-1 rounded-lg w-full md:w-auto">
+                <button onclick="switchRole('teacher')" id="btn-teacher-view" class="flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white shadow text-blue-600">
+                    <i class="fas fa-chalkboard-teacher mr-2"></i>Teacher
+                </button>
+                <button onclick="switchRole('admin')" id="btn-admin" class="flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 text-slate-500 hover:text-slate-800">
+                    <i class="fas fa-user-shield mr-2"></i>Admin
+                </button>
+            </div>
+        </header>
+
+        <main id="main-content" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- LEFT COLUMN: Calendar & Schedule -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Room Selector Tabs -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 px-4 pt-4 pb-0 overflow-x-auto whitespace-nowrap">
+                    <div class="flex space-x-6">
+                        <button onclick="switchRoom('english')" id="tab-english" class="pb-3 px-2 tab-active transition-colors text-sm sm:text-base">
+                            <i class="fas fa-language mr-1"></i> English Room 英語室
+                        </button>
+                        <button onclick="switchRoom('careers')" id="tab-careers" class="pb-3 px-2 tab-inactive transition-colors text-sm sm:text-base">
+                            <i class="fas fa-compass mr-1"></i> Careers & Life Planning 生涯規劃室
+                        </button>
+                        <button onclick="switchRoom('diversity')" id="tab-diversity" class="pb-3 px-2 tab-inactive transition-colors text-sm sm:text-base">
+                            <i class="fas fa-users mr-1"></i> Diversity Learning 多元學習室
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            <i class="far fa-calendar-alt text-blue-500"></i> Calendar
+                        </h2>
+                        <div class="flex items-center gap-4">
+                            <button onclick="changeMonth(-1)" class="p-2 hover:bg-slate-100 rounded-full transition-colors"><i class="fas fa-chevron-left"></i></button>
+                            <span id="current-month-display" class="font-semibold min-w-[120px] text-center">...</span>
+                            <button onclick="changeMonth(1)" class="p-2 hover:bg-slate-100 rounded-full transition-colors"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-7 gap-1 text-center mb-2">
+                        <div class="text-xs font-bold text-slate-400 py-2">SUN</div>
+                        <div class="text-xs font-bold text-slate-400 py-2">MON</div>
+                        <div class="text-xs font-bold text-slate-400 py-2">TUE</div>
+                        <div class="text-xs font-bold text-slate-400 py-2">WED</div>
+                        <div class="text-xs font-bold text-slate-400 py-2">THU</div>
+                        <div class="text-xs font-bold text-slate-400 py-2">FRI</div>
+                        <div class="text-xs font-bold text-slate-400 py-2">SAT</div>
+                    </div>
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-2"></div>
+
+                    <div class="flex gap-4 mt-6 text-xs text-slate-500 justify-center">
+                        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span> Approved</div>
+                        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-amber-400 inline-block"></span> Pending</div>
+                    </div>
+                </div>
+                
+                <!-- Daily Schedule -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 fade-in">
+                    <h3 class="text-lg font-bold mb-4 border-b pb-2 flex justify-between">
+                        <span id="selected-date-display">Schedule</span>
+                        <span id="selected-room-badge" class="text-xs font-normal bg-blue-100 text-blue-700 px-2 py-1 rounded-full"></span>
+                    </h3>
+                    <div id="daily-schedule" class="space-y-3 min-h-[100px]">
+                        <div class="text-center text-slate-400 py-8 italic">Loading database...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div class="lg:col-span-1">
+                <!-- TEACHER VIEW Form -->
+                <div id="teacher-form-panel" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sticky top-6 fade-in">
+                    <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
+                        <i class="fas fa-plus-circle text-blue-500"></i> Request Room
+                    </h2>
+                    <form id="booking-form" onsubmit="handleBookingSubmit(event)" class="space-y-4">
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Select Room</label>
+                            <select id="form-room" onchange="switchRoom(this.value)" required class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
+                                <option value="english">English Room 英語室</option>
+                                <option value="careers">Careers & Life Planning 生涯規劃室</option>
+                                <option value="diversity">Diversity Learning 多元學習室</option>
+                            </select>
+                        </div>
+
+                        <!-- Multiple Dates Selector -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Select Dates</label>
+                            <div class="flex gap-2">
+                                <input type="date" id="form-date-input" class="flex-1 px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
+                                <button type="button" onclick="addFormDate()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg transition-colors font-medium text-sm">Add</button>
+                            </div>
+                            <!-- Date Tags Container -->
+                            <div id="selected-dates-container" class="flex flex-wrap gap-2 mt-2 min-h-[32px]">
+                                <span class="text-xs text-slate-400 italic mt-1">No dates selected. Pick a date and click Add.</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Start Time</label>
+                                <div class="flex gap-2 items-center">
+                                    <select id="start-hour" required class="w-full px-1 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 appearance-none text-center"></select>
+                                    <span class="font-bold text-slate-400">:</span>
+                                    <select id="start-minute" required class="w-full px-1 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 appearance-none text-center"></select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">End Time</label>
+                                <div class="flex gap-2 items-center">
+                                    <select id="end-hour" required class="w-full px-1 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 appearance-none text-center"></select>
+                                    <span class="font-bold text-slate-400">:</span>
+                                    <select id="end-minute" required class="w-full px-1 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 appearance-none text-center"></select>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Teacher Name</label>
+                            <input type="text" id="form-name" required placeholder="e.g. Mr. Smith" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Purpose</label>
+                            <textarea id="form-purpose" required rows="2" placeholder="Reason for booking?" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 resize-none"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md mt-4 transition-colors">
+                            Submit Request(s)
+                        </button>
+                    </form>
+                </div>
+
+                <!-- ADMIN VIEW Dashboard -->
+                <div id="admin-panel" class="hidden bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sticky top-6 fade-in">
+                    <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
+                        <i class="fas fa-inbox text-blue-500"></i> Pending Requests
+                    </h2>
+                    <div id="pending-requests" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 🔥 FIREBASE MODULE SCRIPT 🔥 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // =======================================================================
+        // 將你的 Firebase 設定碼貼在下方
+        // =======================================================================
+        let firebaseConfig;
+        
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else {
+            // 👇👇👇 請覆蓋下面大括號裡面的內容 👇👇👇
+            firebaseConfig = {
+                apiKey: "你的_API_KEY",
+                authDomain: "你的專案ID.firebaseapp.com",
+                projectId: "你的專案ID",
+                storageBucket: "你的專案ID.firebasestorage.app",
+                messagingSenderId: "你的SENDER_ID",
+                appId: "你的APP_ID",
+                measurementId: "你的測量ID"
+            };
+            // 👆👆👆 覆蓋到這裡結束 👆👆👆
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-github-project';
+        const collectionName = 'bookings';
+
+        // Constants
+        const ROOM_NAMES = {
+            'english': 'English Room 英語室',
+            'careers': 'Careers & Life Planning 生涯規劃室',
+            'diversity': 'Diversity Learning 多元學習室'
+        };
+
+        // State Management
+        let bookings = []; 
+        let currentUser = null;
+        let currentRole = 'teacher';
+        let currentRoom = 'english'; // active room tab
+        let currentDate = new Date();
+        let selectedDate = new Date();
+        let bookingToCancel = null;
+        let bookingToReject = null;
+        let selectedFormDates = []; // For multiple dates
+
+        // Initialize Options
+        function generateTimeOptions() {
+            let hourOptions = '<option value="" disabled selected>--</option>';
+            for (let h = 7; h <= 22; h++) {
+                const hr = h.toString().padStart(2, '0');
+                hourOptions += `<option value="${hr}">${hr}</option>`;
+            }
+            let minuteOptions = '<option value="" disabled selected>--</option>';
+            for (let m = 0; m < 60; m += 5) {
+                const min = m.toString().padStart(2, '0');
+                minuteOptions += `<option value="${min}">${min}</option>`;
+            }
+            document.getElementById('start-hour').innerHTML = hourOptions;
+            document.getElementById('end-hour').innerHTML = hourOptions;
+            document.getElementById('start-minute').innerHTML = minuteOptions;
+            document.getElementById('end-minute').innerHTML = minuteOptions;
+        }
+
+        // Firebase Auth & Sync
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch(e) { console.error("Auth Error", e); }
+        };
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                const bookingsRef = collection(db, 'artifacts', appId, 'public', 'data', collectionName);
+                onSnapshot(bookingsRef, (snapshot) => {
+                    bookings = [];
+                    snapshot.forEach((docSnap) => {
+                        bookings.push({ id: docSnap.id, ...docSnap.data() });
+                    });
+                    updateUI();
+                }, (error) => {
+                    showToast('Database Error', 'Could not load data.', 'error');
+                });
+            }
+        });
+
+        // --- Window Binding Functions (For HTML onClick) ---
+        
+        window.switchRoom = function(roomKey) {
+            currentRoom = roomKey;
+            document.getElementById('form-room').value = roomKey; // Sync form
+
+            // Update Tab Styles
+            ['english', 'careers', 'diversity'].forEach(r => {
+                const tab = document.getElementById(`tab-${r}`);
+                if (r === roomKey) {
+                    tab.className = "pb-3 px-2 tab-active transition-colors text-sm sm:text-base";
+                } else {
+                    tab.className = "pb-3 px-2 tab-inactive transition-colors text-sm sm:text-base";
+                }
+            });
+            updateUI();
+        };
+
+        window.switchRole = function(role) {
+            if (role === 'admin' && currentRole !== 'admin') {
+                document.getElementById('password-modal').classList.remove('hidden');
+                document.getElementById('admin-password-input').value = '';
+                setTimeout(() => document.getElementById('admin-password-input').focus(), 50); 
+                return;
+            }
+            executeRoleSwitch(role);
+        };
+
+        window.closePasswordModal = () => document.getElementById('password-modal').classList.add('hidden');
+        
+        window.verifyPassword = function() {
+            if (document.getElementById('admin-password-input').value === 'ccassroom123') {
+                window.closePasswordModal();
+                executeRoleSwitch('admin');
+                showToast('Welcome Admin', 'You have entered admin view.', 'success');
+            } else {
+                showToast('Access Denied', 'Incorrect password.', 'error');
+                document.getElementById('admin-password-input').value = '';
+                document.getElementById('admin-password-input').focus();
+            }
+        };
+
+        window.handlePasswordKeypress = (event) => { if (event.key === 'Enter') window.verifyPassword(); };
+        window.changeMonth = (delta) => { currentDate.setMonth(currentDate.getMonth() + delta); updateUI(); };
+        window.selectDate = (date) => { 
+            selectedDate = date; 
+            document.getElementById('form-date-input').value = formatDate(date); 
+            updateUI(); 
+        };
+        window.closeConfirmModal = () => { document.getElementById('confirm-modal').classList.add('hidden'); bookingToCancel = null; };
+
+        // --- Multi-Date Form Logic ---
+        window.addFormDate = function() {
+            const dateVal = document.getElementById('form-date-input').value;
+            if (!dateVal) {
+                showToast('Notice', 'Please pick a date first.', 'info');
+                return;
+            }
+            if (!selectedFormDates.includes(dateVal)) {
+                selectedFormDates.push(dateVal);
+                selectedFormDates.sort(); // Keep dates in chronological order
+                renderFormDates();
+            }
+        };
+
+        window.removeFormDate = function(dateVal) {
+            selectedFormDates = selectedFormDates.filter(d => d !== dateVal);
+            renderFormDates();
+        };
+
+        function renderFormDates() {
+            const container = document.getElementById('selected-dates-container');
+            if (selectedFormDates.length === 0) {
+                container.innerHTML = '<span class="text-xs text-slate-400 italic mt-1">No dates selected. Pick a date and click Add.</span>';
+                return;
+            }
+            container.innerHTML = selectedFormDates.map(d => `
+                <span class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm border border-blue-200 fade-in">
+                    ${d} 
+                    <button type="button" onclick="removeFormDate('${d}')" class="text-blue-500 hover:text-red-500 hover:bg-white rounded-full w-4 h-4 flex items-center justify-center transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </span>
+            `).join('');
+        }
+
+
+        // --- Submit Booking ---
+        window.handleBookingSubmit = async function(e) {
+            e.preventDefault();
+            if(!currentUser) { showToast('Error', 'Not connected to database', 'error'); return; }
+
+            if (selectedFormDates.length === 0) {
+                showToast('Error', 'Please add at least one date.', 'error'); return;
+            }
+
+            const room = document.getElementById('form-room').value;
+            const startHour = document.getElementById('start-hour').value;
+            const startMinute = document.getElementById('start-minute').value;
+            const endHour = document.getElementById('end-hour').value;
+            const endMinute = document.getElementById('end-minute').value;
+            const name = document.getElementById('form-name').value;
+            const purpose = document.getElementById('form-purpose').value;
+
+            if(!startHour || !startMinute || !endHour || !endMinute) {
+                showToast('Error', 'Please select complete times.', 'error'); return;
+            }
+
+            const start = `${startHour}:${startMinute}`;
+            const end = `${endHour}:${endMinute}`;
+
+            if(start >= end) { showToast('Error', 'End time must be after start time.', 'error'); return; }
+
+            // Pre-check for conflicts across ALL selected dates
+            for (const d of selectedFormDates) {
+                const overlap = bookings.some(b => 
+                    b.room === room && b.date === d && b.status === 'Approved' && 
+                    ((start >= b.start && start < b.end) || (end > b.start && end <= b.end) || (start <= b.start && end >= b.end))
+                );
+
+                if(overlap) { 
+                    showToast('Time Conflict', `The ${ROOM_NAMES[room]} is already booked on ${d} at this time.`, 'error'); 
+                    return; // Abort entirely if there is ANY conflict
+                }
+            }
+
+            try {
+                // Submit a separate document for each date
+                const promises = selectedFormDates.map(d => {
+                    const newBooking = { room, date: d, start, end, purpose, requester: name, status: 'Pending', createdAt: Date.now() };
+                    return addDoc(collection(db, 'artifacts', appId, 'public', 'data', collectionName), newBooking);
+                });
+                
+                await Promise.all(promises);
+
+                // Reset
+                document.getElementById('booking-form').reset();
+                selectedFormDates = [];
+                renderFormDates();
+                
+                showToast('Success', `Successfully submitted requests for ${promises.length} day(s).`, 'success');
+            } catch(e) {
+                showToast('Database Error', 'Failed to submit requests.', 'error');
+            }
+        };
+
+        // --- Status Updates ---
+        window.updateBookingStatus = async function(id, newStatus, reason = '') {
+            if(!currentUser) return;
+            try {
+                if(newStatus === 'Approved') {
+                    const approvedBooking = bookings.find(b => b.id === id);
+                    // Reject conflicts for the SAME ROOM
+                    for(const b of bookings) {
+                        if(b.id !== id && b.room === approvedBooking.room && b.date === approvedBooking.date && b.status === 'Pending') {
+                            if((approvedBooking.start >= b.start && approvedBooking.start < b.end) || 
+                               (approvedBooking.end > b.start && approvedBooking.end <= b.end) || 
+                               (approvedBooking.start <= b.start && approvedBooking.end >= b.end)) {
+                                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', collectionName, b.id), { status: 'Rejected', rejectReason: 'Auto-rejected: Time conflict with an approved booking.' });
+                            }
+                        }
+                    }
+                }
+                
+                const updateData = { status: newStatus };
+                if (newStatus === 'Rejected' && reason) {
+                    updateData.rejectReason = reason;
+                }
+                
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', collectionName, id), updateData);
+                showToast('Status Updated', `Request ${newStatus.toLowerCase()}.`, newStatus === 'Approved' ? 'success' : 'info');
+            } catch(e) {
+                showToast('Database Error', 'Failed to update status.', 'error');
+            }
+        };
+
+        window.promptRejectBooking = function(id) {
+            bookingToReject = id;
+            document.getElementById('reject-reason-input').value = '';
+            document.getElementById('reject-modal').classList.remove('hidden');
+        };
+
+        window.closeRejectModal = function() {
+            document.getElementById('reject-modal').classList.add('hidden');
+            bookingToReject = null;
+        };
+
+        window.executeRejectBooking = async function() {
+            if (!bookingToReject) return;
+            const reason = document.getElementById('reject-reason-input').value.trim();
+            await window.updateBookingStatus(bookingToReject, 'Rejected', reason);
+            window.closeRejectModal();
+        };
+
+        window.cancelBooking = function(id) {
+            bookingToCancel = id;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        };
+
+        window.executeCancelBooking = async function() {
+            if (!currentUser || !bookingToCancel) return;
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', collectionName, bookingToCancel));
+                showToast('Booking Cancelled', 'Booking removed completely.', 'info');
+                window.closeConfirmModal();
+            } catch(e) {
+                showToast('Database Error', 'Failed to cancel booking.', 'error');
+            }
+        };
+
+        // --- Core UI Functions ---
+        function executeRoleSwitch(role) {
+            currentRole = role;
+            const btnT = document.getElementById('btn-teacher-view');
+            const btnA = document.getElementById('btn-admin');
+            
+            if (role === 'teacher') {
+                btnT.className = "flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white shadow text-blue-600";
+                btnA.className = "flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 text-slate-500 hover:text-slate-800";
+                document.getElementById('teacher-form-panel').classList.remove('hidden');
+                document.getElementById('admin-panel').classList.add('hidden');
+            } else {
+                btnA.className = "flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white shadow text-blue-600";
+                btnT.className = "flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 text-slate-500 hover:text-slate-800";
+                document.getElementById('teacher-form-panel').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            renderCalendar();
+            renderDailySchedule();
+            if (currentRole === 'admin') renderAdminPanel();
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            document.getElementById('current-month-display').innerText = `${monthNames[month]} ${year}`;
+            
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            for (let i = 0; i < firstDay; i++) {
+                grid.appendChild(Object.assign(document.createElement('div'), {className: 'aspect-square'}));
+            }
+            
+            const todayStr = formatDate(new Date());
+            const selectedStr = formatDate(selectedDate);
+            
+            // Only show dots for the currently active room tab
+            const activeRoomBookings = bookings.filter(b => b.room === currentRoom);
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const cellDate = new Date(year, month, i);
+                const dateStr = formatDate(cellDate);
+                const isToday = dateStr === todayStr;
+                const isSelected = dateStr === selectedStr;
+                
+                const dayBookings = activeRoomBookings.filter(b => b.date === dateStr);
+                const hasApproved = dayBookings.some(b => b.status === 'Approved');
+                const hasPending = dayBookings.some(b => b.status === 'Pending');
+
+                const cell = document.createElement('div');
+                cell.className = `aspect-square flex flex-col items-center justify-center rounded-xl cursor-pointer transition-all border-2 
+                    ${isSelected ? 'border-blue-500 bg-blue-50 text-blue-700 font-bold shadow-sm' : 'border-transparent hover:border-slate-200 hover:bg-slate-50'}
+                    ${isToday && !isSelected ? 'bg-slate-100 font-bold' : ''}`;
+                cell.onclick = () => window.selectDate(cellDate);
+                cell.innerHTML = `
+                    <span class="text-sm">${i}</span>
+                    <div class="flex gap-1 mt-1 h-1.5">
+                        ${hasApproved ? '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>' : ''}
+                        ${hasPending ? '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>' : ''}
+                    </div>`;
+                grid.appendChild(cell);
+            }
+        }
+
+        function renderDailySchedule() {
+            const dateStr = formatDate(selectedDate);
+            const displayDate = selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+            
+            document.getElementById('selected-date-display').innerText = `Schedule for ${displayDate}`;
+            document.getElementById('selected-room-badge').innerText = ROOM_NAMES[currentRoom].split(' ')[0] + ' Room';
+            
+            const scheduleContainer = document.getElementById('daily-schedule');
+            scheduleContainer.innerHTML = '';
+
+            // Filter schedule strictly by the active room
+            const dailyBookings = bookings.filter(b => b.date === dateStr && b.room === currentRoom).sort((a, b) => a.start.localeCompare(b.start));
+
+            if (dailyBookings.length === 0) {
+                scheduleContainer.innerHTML = `<div class="text-center text-slate-400 py-8 italic bg-slate-50 rounded-lg border border-dashed border-slate-200">No bookings for this date.</div>`;
+                return;
+            }
+
+            dailyBookings.forEach(booking => {
+                const statusColor = booking.status === 'Approved' ? 'bg-green-100 text-green-700 border-green-200' : 
+                                   booking.status === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' : 
+                                   'bg-amber-50 text-amber-700 border-amber-200';
+                const icon = booking.status === 'Approved' ? 'fa-check-circle' : 
+                             booking.status === 'Rejected' ? 'fa-times-circle' : 'fa-clock';
+
+                let adminControls = '';
+                if (currentRole === 'admin' && booking.status === 'Approved') {
+                    adminControls = `<button onclick="cancelBooking('${booking.id}')" class="mt-2 text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md transition-colors shadow-sm"><i class="fas fa-trash-alt mr-1"></i> Cancel Booking</button>`;
+                }
+
+                let rejectInfo = '';
+                if (booking.status === 'Rejected' && booking.rejectReason) {
+                    rejectInfo = `<div class="mt-2 text-xs text-red-700 bg-white p-2 rounded-md border border-red-200"><i class="fas fa-info-circle mr-1"></i> <strong>Reason:</strong> ${booking.rejectReason}</div>`;
+                }
+
+                scheduleContainer.innerHTML += `
+                    <div class="p-3 rounded-xl border ${statusColor} flex justify-between items-start fade-in shadow-sm">
+                        <div class="flex-1 pr-4">
+                            <div class="font-bold text-sm">${booking.start} - ${booking.end}</div>
+                            <div class="text-sm font-medium mt-1 text-slate-800">${booking.purpose}</div>
+                            <div class="text-xs mt-1 opacity-80"><i class="fas fa-user mr-1"></i>${booking.requester}</div>
+                            ${rejectInfo}
+                            ${adminControls}
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <span class="text-xs font-bold px-2 py-1 rounded-full bg-white bg-opacity-50 flex items-center gap-1">
+                                <i class="fas ${icon}"></i> ${booking.status}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderAdminPanel() {
+            const container = document.getElementById('pending-requests');
+            container.innerHTML = '';
+
+            // Admin sees pending requests for ALL rooms
+            const pendingBookings = bookings.filter(b => b.status === 'Pending').sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            if (pendingBookings.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                        <i class="fas fa-check-circle text-4xl text-slate-300 mb-3 block"></i>
+                        <p class="text-slate-500 font-medium">All caught up!</p>
+                        <p class="text-xs text-slate-400 mt-1">No pending requests to review.</p>
+                    </div>`;
+                return;
+            }
+
+            pendingBookings.forEach(booking => {
+                const displayDate = new Date(booking.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                // Assign a color badge based on the room
+                const roomColor = booking.room === 'english' ? 'bg-indigo-100 text-indigo-700 border-indigo-200' :
+                                  booking.room === 'careers' ? 'bg-teal-100 text-teal-700 border-teal-200' :
+                                  'bg-purple-100 text-purple-700 border-purple-200';
+
+                container.innerHTML += `
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm fade-in">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded-md shadow-sm">${displayDate}</span>
+                            <span class="text-xs font-bold text-slate-600"><i class="far fa-clock"></i> ${booking.start} - ${booking.end}</span>
+                        </div>
+                        <span class="inline-block text-xs font-semibold px-2 py-1 mb-2 rounded-full border ${roomColor}">
+                            ${ROOM_NAMES[booking.room]}
+                        </span>
+                        <h4 class="font-bold text-slate-800 mb-1">${booking.purpose}</h4>
+                        <p class="text-sm text-slate-500 mb-4"><i class="fas fa-user text-slate-400 mr-1"></i> Requested by: <span class="font-medium text-slate-700">${booking.requester}</span></p>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="updateBookingStatus('${booking.id}', 'Approved')" class="bg-green-500 hover:bg-green-600 text-white text-sm font-bold py-2 rounded-lg transition-colors flex justify-center items-center gap-1 shadow-sm">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button onclick="promptRejectBooking('${booking.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 text-sm font-bold py-2 rounded-lg transition-colors border border-red-200 flex justify-center items-center gap-1">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function formatDate(date) {
+            const d = new Date(date);
+            let month = '' + (d.getMonth() + 1), day = '' + d.getDate();
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+            return [d.getFullYear(), month, day].join('-');
+        }
+
+        let toastTimeout;
+        window.showToast = function(title, message, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-title').innerText = title;
+            document.getElementById('toast-message').innerText = message;
+            const icon = document.getElementById('toast-icon');
+            icon.className = type === 'success' ? 'fas fa-check-circle text-green-500 text-xl' : 
+                             type === 'error' ? 'fas fa-exclamation-circle text-red-500 text-xl' : 'fas fa-info-circle text-blue-500 text-xl';
+            toast.classList.remove('translate-x-full');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => toast.classList.add('translate-x-full'), 3000);
+        };
+
+        // Boot script
+        generateTimeOptions();
+        document.getElementById('form-date-input').value = formatDate(selectedDate);
+        renderFormDates();
+    </script>
+</body>
+</html>
