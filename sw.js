@@ -1,4 +1,6 @@
-const CACHE_NAME = 'ccass-booking-v1';
+// 把原本的 v1 改成 v2 (或者任何新名字)
+const CACHE_NAME = 'ccass-booking-v2';
+
 const urlsToCache = [
   './',
   './logo.png',
